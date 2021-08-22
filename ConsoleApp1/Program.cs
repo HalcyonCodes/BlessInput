@@ -14,8 +14,10 @@ namespace ConsoleApp1
         {
             //int[] aa = MouseAction.getAScreenBound();
             Thread.Sleep(2000);
-            MouseAction.init("Bless Unleashed");
-            MouseAction.moveTo(100, 100);
+            //InputAction.init("Bless Unleashed");
+            //InputAction.MoveTo(100,100);
+            int d = InputAction.keyPress(65);
+            Console.WriteLine(d);
             Console.ReadKey();
         }
     }

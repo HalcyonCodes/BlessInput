@@ -10,9 +10,10 @@ using System.Windows.Forms;
 
 namespace BlessInput
 {
-    public class Action
+    public class InputAction
     {
-        private INPUT structure;
+        private INPUT mouseStruct;
+        private INPUT keyBdStruct;
         private INPUT[] pInput;
         private int windowXMin;
         private int windowYMin;
@@ -21,9 +22,9 @@ namespace BlessInput
 
         private int screenWidth;
         private int screenHeight;
-        public Action()
+        public InputAction()
         {
-            structure = new INPUT
+            mouseStruct = new INPUT
             {
                 mi = {
                 dx = 0,
@@ -32,18 +33,29 @@ namespace BlessInput
                 dwFlags = 0,
                 }
             };
+            keyBdStruct = new INPUT
+            {
+                type = 1,
+                ki = {
+                wVk = 0,
+                wScan = 0,
+                dwFlags = 0,
+                time = 0,
+                dwExtraInfo = IntPtr.Zero,
+                }
+            };
             pInput = new INPUT[1];
         }
 
 
-        private static Action instance;
-        public static Action Instance
+        private static InputAction instance;
+        public static InputAction Instance
         {
             get
             {
                 if (instance == null)
                 {
-                    instance = new Action();
+                    instance = new InputAction();
 
                 }
                 return instance;
@@ -73,11 +85,11 @@ namespace BlessInput
         private struct INPUT
         {
             [FieldOffset(8)]
-            public Action.HARDWAREINPUT hi;
+            public InputAction.HARDWAREINPUT hi;
             [FieldOffset(8)]
-            public Action.KEYBDINPUT ki;
+            public InputAction.KEYBDINPUT ki;
             [FieldOffset(8)]
-            public Action.MOUSEINPUT mi;
+            public InputAction.MOUSEINPUT mi;
             [FieldOffset(0)]
             public int type;
         }
@@ -91,6 +103,8 @@ namespace BlessInput
             public int time;
             public IntPtr dwExtraInfo;
         }
+        [DllImport("user32.dll")]
+        private static extern uint MapVirtualKey(uint uCode, uint uMapType);
 
         [Flags]
         private enum MOUSEEVENTF
@@ -119,6 +133,15 @@ namespace BlessInput
             public int time;
             public IntPtr dwExtraInfo;
         }
+        [Flags]
+        private enum KEYEVENTF
+        {
+            EXTENDEDKEY = 1,
+            KEYUP = 2,
+            SCANCODE = 8,
+            UNICODE = 4
+        }
+
         public struct RECT
         {
             public int Left;
@@ -172,7 +195,7 @@ namespace BlessInput
             Instance.windowYMin = point[1];
             Instance.windowXMax = point[2];
             Instance.windowYMax = point[3];
-            
+
             int[] pointB = getAScreenBound();
             Instance.screenWidth = pointB[0];
             Instance.screenHeight = pointB[1];
@@ -184,16 +207,17 @@ namespace BlessInput
         /// <returns>1表示成功，-1表示失败</returns>
         public static int LClickDown(int time)
         {
-            Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.LEFTDOWN;
-            Instance.pInput[0] = Instance.structure;
-            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.LEFTDOWN;
+            Instance.pInput[0] = Instance.mouseStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
-            if(time == 0) { } else
+            if (time == 0) { }
+            else
             {
                 Thread.Sleep(time);
-                Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.LEFTUP;
-                Instance.pInput[0] = Instance.structure;
-                result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+                Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.LEFTUP;
+                Instance.pInput[0] = Instance.mouseStruct;
+                result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
                 if (result == 0) return -1;
             }
             return 1;
@@ -205,17 +229,17 @@ namespace BlessInput
         /// <returns>1成功，-1失败</returns>
         public static int RClickDown(int time)
         {
-            Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.RIGHTDOWN;
-            Instance.pInput[0] = Instance.structure;
-            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.RIGHTDOWN;
+            Instance.pInput[0] = Instance.mouseStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
             if (time == 0) { }
             else
             {
                 Thread.Sleep(time);
-                Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.RIGHTUP;
-                Instance.pInput[0] = Instance.structure;
-                result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+                Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.RIGHTUP;
+                Instance.pInput[0] = Instance.mouseStruct;
+                result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
                 if (result == 0) return -1;
             }
             return 1;
@@ -227,29 +251,29 @@ namespace BlessInput
         /// <returns>1成功，-1失败</returns>
         public static int MClickDown(int time)
         {
-            Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEDOWN;
-            Instance.pInput[0] = Instance.structure;
-            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEDOWN;
+            Instance.pInput[0] = Instance.mouseStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
             if (time == 0) { }
             else
             {
                 Thread.Sleep(time);
-                Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEUP;
-                Instance.pInput[0] = Instance.structure;
-                result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+                Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEUP;
+                Instance.pInput[0] = Instance.mouseStruct;
+                result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
                 if (result == 0) return -1;
             }
             return 1;
         }/// <summary>
-        /// 左键弹起
-        /// </summary>
-        /// <returns></returns>
+         /// 左键弹起
+         /// </summary>
+         /// <returns></returns>
         public static int LClickUp()
         {
-            Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEUP;
-            Instance.pInput[0] = Instance.structure;
-            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEUP;
+            Instance.pInput[0] = Instance.mouseStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
             return 1;
         }
@@ -259,9 +283,9 @@ namespace BlessInput
         /// <returns></returns>
         public static int RClickUp()
         {
-            Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.RIGHTUP;
-            Instance.pInput[0] = Instance.structure;
-            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.RIGHTUP;
+            Instance.pInput[0] = Instance.mouseStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
             return 1;
         }
@@ -271,9 +295,9 @@ namespace BlessInput
         /// <returns></returns>
         public static int MClickUp()
         {
-            Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEUP;
-            Instance.pInput[0] = Instance.structure;
-            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEUP;
+            Instance.pInput[0] = Instance.mouseStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
             return 1;
         }
@@ -285,15 +309,15 @@ namespace BlessInput
         /// <returns>成功返回1，失败返回-1</returns>
         public static int moveTo(int x, int y)
         {
-            if( x >= (Instance.windowXMax - Instance.windowXMin)) x = Instance.windowXMax;
+            if (x >= (Instance.windowXMax - Instance.windowXMin)) x = Instance.windowXMax;
             if (y >= (Instance.windowYMax - Instance.windowYMin)) y = Instance.windowYMax;
             int InputX = (Instance.windowXMin + x) * (65335 / Instance.screenWidth);
             int InputY = (Instance.windowYMin + y) * (65335 / Instance.screenHeight);
-            Instance.structure.mi.dx = InputX;
-            Instance.structure.mi.dy = InputY;
-            Instance.structure.mi.dwFlags = (int)(MOUSEEVENTF.ABSOLUTE | MOUSEEVENTF.MOVE);
-            Instance.pInput[0] = Instance.structure;
-            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dx = InputX;
+            Instance.mouseStruct.mi.dy = InputY;
+            Instance.mouseStruct.mi.dwFlags = (int)(MOUSEEVENTF.ABSOLUTE | MOUSEEVENTF.MOVE);
+            Instance.pInput[0] = Instance.mouseStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
             return 1;
         }
@@ -303,14 +327,14 @@ namespace BlessInput
         /// <returns>成功返回1</returns>
         public static int MOnClick()
         {
-            Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEDOWN;
-            Instance.pInput[0] = Instance.structure;
-            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEDOWN;
+            Instance.pInput[0] = Instance.mouseStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
             Thread.Sleep(100);
-            Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEUP;
-            Instance.pInput[0] = Instance.structure;
-            result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEUP;
+            Instance.pInput[0] = Instance.mouseStruct;
+            result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
             return 1;
         }
@@ -320,14 +344,14 @@ namespace BlessInput
         /// <returns>成功返回1</returns>
         public static int LOnClick()
         {
-            Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.LEFTDOWN;
-            Instance.pInput[0] = Instance.structure;
-            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.LEFTDOWN;
+            Instance.pInput[0] = Instance.mouseStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
             Thread.Sleep(100);
-            Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.LEFTUP;
-            Instance.pInput[0] = Instance.structure;
-            result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.LEFTUP;
+            Instance.pInput[0] = Instance.mouseStruct;
+            result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
             return 1;
         }
@@ -337,23 +361,76 @@ namespace BlessInput
         /// <returns>失败返回-1</returns>
         public static int ROnClick()
         {
-            Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.RIGHTDOWN;
-            Instance.pInput[0] = Instance.structure;
-            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.RIGHTDOWN;
+            Instance.pInput[0] = Instance.mouseStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
             Thread.Sleep(100);
-            Instance.structure.mi.dwFlags = (int)MOUSEEVENTF.RIGHTUP;
-            Instance.pInput[0] = Instance.structure;
-            result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.structure));
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.RIGHTUP;
+            Instance.pInput[0] = Instance.mouseStruct;
+            result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
             return 1;
         }
         //--------------------------------------------------------------------------------
         //键盘
         //-----------------------------------------------------------------------------------
-        public static int keyDown(int time)
+        /// <summary>
+        /// 按下键盘
+        /// </summary>
+        /// <param name="key">按键码</param>
+        /// <param name="time">持续时间，0时一直不放</param>
+        /// <returns></returns>
+        public static int keyDown(short key, int time)
         {
-
+            Instance.keyBdStruct.ki.wScan = (short)MapVirtualKey((uint)key, 0);
+            Instance.keyBdStruct.ki.dwFlags = (int)KEYEVENTF.SCANCODE;
+            Instance.pInput[0] = Instance.keyBdStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.keyBdStruct));
+            if (result == 0) return -1;
+            if (time == 0) { }
+            else
+            {
+                Thread.Sleep(time);
+                Instance.keyBdStruct.ki.dwFlags = (int)KEYEVENTF.KEYUP| (int)KEYEVENTF.SCANCODE;
+                Instance.pInput[0] = Instance.keyBdStruct;
+                result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.keyBdStruct));
+                if (result == 0) return -1;
+            }
+            return 1;
+        }
+        /// <summary>
+        /// 按键弹起
+        /// </summary>
+        /// <param name="key">按键码</param>
+        /// <returns></returns>
+        public static int keyUp(short key)
+        {
+            Instance.keyBdStruct.ki.wScan = (short)MapVirtualKey((uint)key, 0);
+            Instance.keyBdStruct.ki.dwFlags = (int)KEYEVENTF.KEYUP|(int)KEYEVENTF.SCANCODE;
+            Instance.pInput[0] = Instance.keyBdStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.keyBdStruct));
+            if (result == 0) return -1;
+            return 1;
+        }
+        /// <summary>
+        /// 按键一次
+        /// </summary>
+        /// <param name="key">按键码</param>
+        /// <returns>成功1，-1失败</returns>
+        public static int keyPress(short key)
+        {
+            Instance.keyBdStruct.ki.wScan = (short)MapVirtualKey((uint)key, 0);
+            Instance.keyBdStruct.ki.dwFlags = (int)KEYEVENTF.SCANCODE;
+            Instance.pInput[0] = Instance.keyBdStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.keyBdStruct));
+            if (result == 0) return -1;
+            Thread.Sleep(100);
+            Instance.keyBdStruct.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.SCANCODE;
+            Instance.pInput[0] = Instance.keyBdStruct;
+            result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.keyBdStruct));
+            if (result == 0) return -1;
+            return 1;
         }
     }
 }
