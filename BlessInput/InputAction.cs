@@ -162,7 +162,6 @@ namespace BlessInput
             result[0] = Screen.PrimaryScreen.Bounds.Width;
             return result;
         }
-
         /// <summary>
         /// 获取图像的原点
         /// </summary>
@@ -322,6 +321,22 @@ namespace BlessInput
             return 1;
         }
         /// <summary>
+        /// 在原本鼠标坐标上叠加移动鼠标
+        /// </summary>
+        /// <param name="x">叠加x像素</param>
+        /// <param name="y">叠加y像素</param>
+        /// <returns></returns>
+        public static int moveToChange(int x, int y)
+        {
+            Instance.mouseStruct.mi.dx = x;
+            Instance.mouseStruct.mi.dy = y;
+            Instance.mouseStruct.mi.dwFlags = (int)(MOUSEEVENTF.MOVE);
+            Instance.pInput[0] = Instance.mouseStruct;
+            uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
+            if (result == 0) return -1;
+            return 1;
+        }
+        /// <summary>
         /// 点击中键
         /// </summary>
         /// <returns>成功返回1</returns>
@@ -392,7 +407,7 @@ namespace BlessInput
             else
             {
                 Thread.Sleep(time);
-                Instance.keyBdStruct.ki.dwFlags = (int)KEYEVENTF.KEYUP| (int)KEYEVENTF.SCANCODE;
+                Instance.keyBdStruct.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.SCANCODE;
                 Instance.pInput[0] = Instance.keyBdStruct;
                 result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.keyBdStruct));
                 if (result == 0) return -1;
@@ -407,7 +422,7 @@ namespace BlessInput
         public static int keyUp(short key)
         {
             Instance.keyBdStruct.ki.wScan = (short)MapVirtualKey((uint)key, 0);
-            Instance.keyBdStruct.ki.dwFlags = (int)KEYEVENTF.KEYUP|(int)KEYEVENTF.SCANCODE;
+            Instance.keyBdStruct.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.SCANCODE;
             Instance.pInput[0] = Instance.keyBdStruct;
             uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.keyBdStruct));
             if (result == 0) return -1;
