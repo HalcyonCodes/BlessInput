@@ -17,7 +17,9 @@ namespace ConsoleApp1
             //InputAction.init("Bless Unleashed");
             //InputAction.MoveTo(100,100);
             //int d = InputAction.keyPress(65);
-            int d = InputAction.moveToChange(-100, -100);
+            InputAction.LClickDown(0);
+            Thread.Sleep(200);
+            int d = InputAction.LClickUp();
             Console.WriteLine(d);
             Console.ReadKey();
         }

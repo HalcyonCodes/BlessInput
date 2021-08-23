@@ -270,7 +270,7 @@ namespace BlessInput
          /// <returns></returns>
         public static int LClickUp()
         {
-            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.MIDDLEUP;
+            Instance.mouseStruct.mi.dwFlags = (int)MOUSEEVENTF.LEFTUP;
             Instance.pInput[0] = Instance.mouseStruct;
             uint result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.mouseStruct));
             if (result == 0) return -1;
