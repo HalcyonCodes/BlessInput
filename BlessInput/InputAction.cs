@@ -188,16 +188,31 @@ namespace BlessInput
         }
         public static void init(String gameName)
         {
-            IntPtr hWnd = FindWindow(null, gameName);
-            int[] point = getWindowBasePoint(hWnd);
-            Instance.windowXMin = point[0];
-            Instance.windowYMin = point[1];
-            Instance.windowXMax = point[2];
-            Instance.windowYMax = point[3];
+            if (gameName == "")
+            {
+                int[] pointB = getAScreenBound();
+                Instance.screenWidth = pointB[0];
+                Instance.screenHeight = pointB[1];
 
-            int[] pointB = getAScreenBound();
-            Instance.screenWidth = pointB[0];
-            Instance.screenHeight = pointB[1];
+                Instance.windowXMin = 0;
+                Instance.windowYMin = 0;
+                Instance.windowXMax = pointB[0];
+                Instance.windowYMax = pointB[1];
+
+            }
+            else
+            {
+                IntPtr hWnd = FindWindow(null, gameName);
+                int[] point = getWindowBasePoint(hWnd);
+                Instance.windowXMin = point[0];
+                Instance.windowYMin = point[1];
+                Instance.windowXMax = point[2];
+                Instance.windowYMax = point[3];
+
+                int[] pointB = getAScreenBound();
+                Instance.screenWidth = pointB[0];
+                Instance.screenHeight = pointB[1];
+            }
         }
         /// <summary>
         /// 按紧左键
@@ -445,6 +460,62 @@ namespace BlessInput
             Instance.pInput[0] = Instance.keyBdStruct;
             result = SendInput(1, Instance.pInput, Marshal.SizeOf(Instance.keyBdStruct));
             if (result == 0) return -1;
+            return 1;
+        }
+        //--------------------------------------------------------------------------------
+        //输入
+        //-----------------------------------------------------------------------------------
+        /// <summary>
+        /// 发送字符串（包括英文和中文字符）
+        /// </summary>
+        /// <param name="str">要发送的字符串</param>
+        /// <returns>成功返回1，失败返回-1</returns>
+        public static int SendString(string str)
+        {
+            // 清空之前的输入
+            InputAction.keyPress((short)Keys.LMenu);
+            InputAction.keyUp((short)Keys.LMenu);
+
+            foreach (char ch in str)
+            {
+                INPUT[] inputDown = new INPUT[1];
+                INPUT[] inputUp = new INPUT[1];
+
+                // 设置按键按下的参数
+                inputDown[0] = new INPUT
+                {
+                    type = 1,
+                    ki = new KEYBDINPUT
+                    {
+                        wScan = (short)ch,
+                        dwFlags = (int)KEYEVENTF.UNICODE,
+                        time = 0,
+                        dwExtraInfo = IntPtr.Zero,
+                    }
+                };
+
+                // 设置按键弹起的参数
+                inputUp[0] = new INPUT
+                {
+                    type = 1,
+                    ki = new KEYBDINPUT
+                    {
+                        wScan = (short)ch,
+                        dwFlags = (int)(KEYEVENTF.UNICODE | KEYEVENTF.KEYUP),
+                        time = 0,
+                        dwExtraInfo = IntPtr.Zero,
+                    }
+                };
+
+                // 发送按键按下事件
+                uint result = SendInput(1, inputDown, Marshal.SizeOf(typeof(INPUT)));
+                if (result == 0) return -1;
+
+                // 发送按键弹起事件
+                result = SendInput(1, inputUp, Marshal.SizeOf(typeof(INPUT)));
+                if (result == 0) return -1;
+            }
+
             return 1;
         }
     }

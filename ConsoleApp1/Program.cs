@@ -13,14 +13,15 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             //int[] aa = MouseAction.getAScreenBound();
-            Thread.Sleep(2000);
-            //InputAction.init("Bless Unleashed");
-            //InputAction.MoveTo(100,100);
+            Thread.Sleep(3000);
+            //InputAction.init("广发操盘手(易淘金PC版)");
+            InputAction.moveTo(500,500);
             //int d = InputAction.keyPress(65);
-            InputAction.LClickDown(0);
-            Thread.Sleep(200);
-            int d = InputAction.LClickUp();
-            Console.WriteLine(d);
+            //InputAction.LClickDown(0);
+            //Thread.Sleep(200);
+            //int d = InputAction.LClickUp();
+            //InputAction.SendString("3000022");
+            Console.WriteLine();
             Console.ReadKey();
         }
     }
